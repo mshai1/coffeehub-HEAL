@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import Link from "next/link";
 
+
+
 export default function Home() {
   const [started, setStarted] = useState(false);
 
@@ -62,7 +64,7 @@ function Survey() {
       {step === 2 && (
         <div>
           <h2 className="text-xl font-semibold mb-4">You look tired with all these questions... Let's get you a coffee!</h2>
-          <Link href="/coffee">
+          <Link href="/makecoffee">
             <button className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Make Coffee</button>
           </Link>
         </div>

@@ -21,8 +21,10 @@ export default function MakeCoffee() {
     const [insufficientItem, setInsufficientItem] = useState('');
     const router = useRouter();
 
+    const [announcementMade, setAnnouncementMade] = useState(false);
+
     useEffect(() => {
-        if (!requiredIngredients) {
+        if (!requiredIngredients && !announcementMade) {
             const required = {
                 Coffee: Math.floor(Math.random() * 3) + 1,
                 Milk: (Math.floor(Math.random() * 3) + 1) * 10,
@@ -34,7 +36,7 @@ export default function MakeCoffee() {
             const insufficient = ingredients[Math.floor(Math.random() * ingredients.length)];
             setAvailableIngredients(prev => ({ ...prev, [insufficient]: 0 }));
             setInsufficientItem(insufficient);
-
+    
             setTimeout(() => {
                 const instructions = `A visually impaired customer needs your help to make a coffee. They require: ${Object.entries(required).map(([item, amount]) => {
                     const unit = item === 'Coffee' ? 'shots' : item === 'Sugar' ? 'packs' : item === 'Cream' ? 'pumps' : 'ml';
@@ -43,8 +45,11 @@ export default function MakeCoffee() {
                 const utterance = new SpeechSynthesisUtterance(instructions);
                 window.speechSynthesis.speak(utterance);
             }, 500);
+    
+            setAnnouncementMade(true); // Prevent re-announcing
         }
     }, []);
+    
 
     const addIngredient = (ingredient) => {
         if (availableIngredients[ingredient] > 0) {
@@ -73,9 +78,24 @@ export default function MakeCoffee() {
                 return `${amount} ${unit} of ${item.toLowerCase()}`;
             }).join(', ')}`;
             const utterance = new SpeechSynthesisUtterance(missingText);
+
+                    // Prevent multiple triggers by disabling speech synthesis while it’s speaking
+        utterance.onstart = () => {
+            isSpeaking = true;
+        };
+
+        utterance.onend = () => {
+            isSpeaking = false;
+        };
+                 // Speak only if not already speaking
+        if (!isSpeaking) {
             window.speechSynthesis.speak(utterance);
         }
+        }
     };
+
+    // Track if speech is currently active
+let isSpeaking = false;
 
     const refillIngredient = (ingredient) => {
         setAvailableIngredients(prev => ({ ...prev, [ingredient]: prev[ingredient] + 3 }));
